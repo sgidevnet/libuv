@@ -324,7 +324,7 @@ uv_handle_type uv_guess_handle(uv_file file) {
       return UV_UDP;
 
   if (type == SOCK_STREAM) {
-#if defined(_AIX) || defined(__DragonFly__)
+#if defined(_AIX) || defined(__DragonFly__) || defined(__sgi)
     /* on AIX/DragonFly the getsockname call returns an empty sa structure
      * for sockets of type AF_UNIX.  For all other types it will
      * return a properly filled in structure.
