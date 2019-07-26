@@ -65,3 +65,36 @@ uint64_t uv_get_total_memory(void)
   pagesize = sysconf(_SC_PAGESIZE);
   return (uint64_t) realmem.physmem * pagesize;
 }
+
+uint64_t uv_get_constrained_memory(void)
+{
+  return 0;
+}
+
+void uv_loadavg(double avg[3])
+{
+  int avenrun[3];
+    
+  static unsigned long avenrun_offset;
+  sgt_cookie_t cookie;
+    
+    
+  if ((avenrun_offset = sysmp(MP_KERNADDR, MPKA_AVENRUN)) == -1) {
+    avg[0] = 0.; avg[1] = 0.; avg[2] = 0.;
+    return;
+  }
+
+  SGT_COOKIE_INIT(&cookie);
+  SGT_COOKIE_SET_KSYM(&cookie, "avenrun");
+    
+  if (sysget(SGT_KSYM, (char *)avenrun, sizeof(avenrun),
+	     SGT_READ, &cookie) != sizeof(avenrun)) {
+    avg[0] = 0.; avg[1] = 0.; avg[2] = 0.;
+    return;
+  }
+
+  for (int i = 0; i < 3; i++) {
+    avg[i] = avenrun[i];
+    avg[i] /= 1024.0;
+  }
+}
