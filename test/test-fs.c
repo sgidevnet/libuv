@@ -2389,6 +2389,9 @@ TEST_IMPL(fs_futime) {
 #if defined(_AIX) && !defined(_AIX71)
   RETURN_SKIP("futime is not implemented for AIX versions below 7.1");
 #endif
+#if defined(__sgi)
+  RETURN_SKIP("futime is not implemented for IRIX");
+#endif
 
   /* Setup. */
   loop = uv_default_loop();
