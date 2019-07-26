@@ -18,4 +18,11 @@ int setenv(const char *name, const char *value, int o);
 char *mkdtemp(char *template);
 size_t strnlen(const char* str, size_t maxlen);
 
+#define UV_PLATFORM_LOOP_FIELDS                                               \
+  struct pollfd* poll_fds;                                                    \
+  size_t poll_fds_used;                                                       \
+  size_t poll_fds_size;                                                       \
+  unsigned char poll_fds_iterating;                                           \
+
+
 #endif /* UV_IRIX_H */

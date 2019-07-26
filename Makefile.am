@@ -376,6 +376,7 @@ libuv_la_CFLAGS += -D_SGI_SOURCE \
 uvinclude_HEADERS += include/uv/irix.h
 libuv_la_SOURCES += src/unix/irix.c \
                     src/unix/posix-hrtime.c \
+                    src/unix/no-fsevents.c \
                     src/unix/posix-poll.c
 endif
 
