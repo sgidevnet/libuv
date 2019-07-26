@@ -44,7 +44,7 @@
 int
 setenv(const char *name, const char *value, int o)
 {
-    size_t len = strlen(name) + strlen(value) + 1;
+    size_t len = strlen(name) + strlen(value) + 2;
     char *s = malloc(len+1);
     int ret;
 
