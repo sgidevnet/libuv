@@ -41,6 +41,8 @@
 #include <time.h>
 #include <unistd.h>
 
+extern char** environ;
+
 static uv_mutex_t process_title_mutex;
 static uv_once_t process_title_mutex_once = UV_ONCE_INIT;
 static void* args_mem = NULL;
@@ -60,6 +62,31 @@ int setenv(const char *name, const char *value, int o) {
     free(s);
     return ret;
 }
+
+int unsetenv (const char *name) {
+  size_t len;
+  char **ep;
+
+  if (name == NULL || *name == '\0' || strchr (name, '=') != NULL)
+    return UV_EINVAL;
+
+  len = strlen (name);
+
+  ep = environ;
+  while (*ep != NULL)
+    if (!strncmp (*ep, name, len) && (*ep)[len] == '=') {
+      char **dp = ep;
+
+      do
+	dp[0] = dp[1];
+      while (*dp++);
+    } else { 
+      ++ep;
+    }
+
+  return 0;
+}
+
 
 char *mkdtemp(char *template) {
     mkdir(mktemp(template), 0700);

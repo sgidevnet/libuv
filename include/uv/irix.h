@@ -14,7 +14,7 @@
 #define CLOCK_MONOTONIC CLOCK_SGI_CYCLE
 
 int setenv(const char *name, const char *value, int o);
-#define unsetenv(x) setenv(x, "", 1)
+int unsetenv(const char *name);
 char *mkdtemp(char *template);
 size_t strnlen(const char* str, size_t maxlen);
 
