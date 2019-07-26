@@ -33,9 +33,7 @@
 
 /* Support functions for things missing from IRIX. */
 
-int
-setenv(const char *name, const char *value, int o)
-{
+int setenv(const char *name, const char *value, int o) {
     size_t len = strlen(name) + strlen(value) + 1;
     char *s = malloc(len+1);
     int ret;
@@ -46,16 +44,14 @@ setenv(const char *name, const char *value, int o)
     return ret;
 }
 
-char *mkdtemp(char *template)
-{
+char *mkdtemp(char *template) {
     mkdir(mktemp(template), 0700);
     return template;
 }
 
 /* Actual libuv functions. */
 
-uint64_t uv__hrtime(uv_clocktype_t type)
-{
+uint64_t uv__hrtime(uv_clocktype_t type) {
   uint64_t G = 1000000000;
   struct timespec t;
   if(clock_gettime(CLOCK_REALTIME, &t))
@@ -63,8 +59,7 @@ uint64_t uv__hrtime(uv_clocktype_t type)
   return (uint64_t) t.tv_sec * G + t.tv_nsec;
 }
 
-uint64_t uv_get_free_memory(void)
-{
+uint64_t uv_get_free_memory(void) {
   struct rminfo realmem;
   long pagesize;
     
@@ -77,8 +72,7 @@ uint64_t uv_get_free_memory(void)
   return (uint64_t) realmem.freemem * pagesize;
 }
 
-uint64_t uv_get_total_memory(void)
-{
+uint64_t uv_get_total_memory(void) {
   struct rminfo realmem;
   long pagesize;
     
@@ -91,13 +85,11 @@ uint64_t uv_get_total_memory(void)
   return (uint64_t) realmem.physmem * pagesize;
 }
 
-uint64_t uv_get_constrained_memory(void)
-{
+uint64_t uv_get_constrained_memory(void) {
   return 0;
 }
 
-void uv_loadavg(double avg[3])
-{
+void uv_loadavg(double avg[3]) {
   int avenrun[3];
     
   static unsigned long avenrun_offset;
@@ -123,6 +115,42 @@ void uv_loadavg(double avg[3])
     avg[i] = avenrun[i];
     avg[i] /= 1024.0;
   }
+}
+
+int uv_cpu_info(uv_cpu_info_t** cpu_infos, int*count) {
+  uv_cpu_info_t *cpu_info;
+  int result, ncpus, i = 0;
+  
+  ncpus = sysconf(_SC_NPROC_ONLN);
+  
+  *cpu_infos = (uv_cpu_info_t*) uv__malloc(ncpus * sizeof(uv_cpu_info_t));
+  if (!*cpu_infos) {
+    return UV_ENOMEM;
+  }
+
+  cpu_info = *cpu_infos;
+  while(i < ncpus) {
+    cpu_info->speed = 100;
+    cpu_info->model = "CPU";
+    cpu_info->cpu_times.user = 0;
+    cpu_info->cpu_times.sys = 0;
+    cpu_info->cpu_times.idle = 100;
+    cpu_info->cpu_times.irq = 0;
+    cpu_info->cpu_times.nice = 0;
+    cpu_info++;
+    i++;
+  }
+  return 0;
+}
+
+void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
+  int i;
+
+  for (i = 0; i < count; ++i) {
+    uv__free(cpu_infos[i].model);
+  }
+
+  uv__free(cpu_infos);
 }
 
 /* Stolen from AIX.

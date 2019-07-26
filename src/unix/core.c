@@ -583,7 +583,6 @@ int uv__nonblock_ioctl(int fd, int set) {
   return 0;
 }
 
-
 #if !defined(__CYGWIN__) && !defined(__MSYS__) && !defined(__HAIKU__)
 int uv__cloexec_ioctl(int fd, int set) {
   int r;
