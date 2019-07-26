@@ -862,7 +862,9 @@ start:
     msg.msg_namelen = 0;
     msg.msg_iov = iov;
     msg.msg_iovlen = iovcnt;
+#if !defined(__sgi)
     msg.msg_flags = 0;
+#endif
 
     msg.msg_control = &scratch.alias;
     msg.msg_controllen = CMSG_SPACE(sizeof(fd_to_send));
@@ -1152,7 +1154,9 @@ static void uv__read(uv_stream_t* stream) {
       while (nread < 0 && errno == EINTR);
     } else {
       /* ipc uses recvmsg */
+#if !defined(__sgi)
       msg.msg_flags = 0;
+#endif
       msg.msg_iov = (struct iovec*) &buf;
       msg.msg_iovlen = 1;
       msg.msg_name = NULL;

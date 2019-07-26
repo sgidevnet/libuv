@@ -200,8 +200,10 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
         addr = (const struct sockaddr*) &peer;
 
       flags = 0;
+#if !defined(__sgi)
       if (h.msg_flags & MSG_TRUNC)
         flags |= UV_UDP_PARTIAL;
+#endif
 
       handle->recv_cb(handle, nread, &buf, addr, flags);
     }
