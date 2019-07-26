@@ -374,7 +374,9 @@ if IRIX
 libuv_la_CFLAGS += -D_SGI_SOURCE \
                    -D_REENTRANT_FUNCTIONS
 uvinclude_HEADERS += include/uv/irix.h
-libuv_la_SOURCES += src/unix/irix.c
+libuv_la_SOURCES += src/unix/irix.c \
+                    src/unix/posix-hrtime.c \
+                    src/unix/posix-poll.c
 endif
 
 if ANDROID
