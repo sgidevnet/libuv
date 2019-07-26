@@ -605,7 +605,7 @@ TEST_IMPL(poll_bad_fdtype) {
 #if !defined(__DragonFly__) && !defined(__FreeBSD__) && !defined(__sun) && \
     !defined(_AIX) && !defined(__MVS__) && !defined(__FreeBSD_kernel__) && \
     !defined(__OpenBSD__) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
-    !defined(__NetBSD__)
+    !defined(__NetBSD__) && !defined(__sgi)
   uv_poll_t poll_handle;
   int fd;
 
