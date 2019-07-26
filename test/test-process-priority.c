@@ -42,9 +42,10 @@ TEST_IMPL(process_priority) {
     r = uv_os_setpriority(0, i);
 
     /* If UV_EACCES is returned, the current user doesn't have permission to
-       set this specific priority. */
-    if (r == UV_EACCES)
+       set this specific priority. On IRIX UV_EPERM is returned instead. */
+    if (r == UV_EACCES || r == UV_EPERM)
       continue;
+    printf("%d\n", r);
 
     ASSERT(r == 0);
     ASSERT(uv_os_getpriority(0, &priority) == 0);
