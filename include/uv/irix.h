@@ -16,5 +16,6 @@
 int setenv(const char *name, const char *value, int o);
 #define unsetenv(x) setenv(x, "", 1)
 char *mkdtemp(char *template);
+size_t strnlen(const char* str, size_t maxlen);
 
 #endif /* UV_IRIX_H */

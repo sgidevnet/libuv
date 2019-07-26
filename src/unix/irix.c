@@ -49,6 +49,14 @@ char *mkdtemp(char *template) {
     return template;
 }
 
+size_t strnlen(const char* str, size_t maxlen) {
+  char* p = memchr(str, 0, maxlen);
+  if (p == NULL)
+    return maxlen;
+  else
+    return p - str;
+}
+
 /* Actual libuv functions. */
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
@@ -64,8 +72,7 @@ uint64_t uv_get_free_memory(void) {
   long pagesize;
     
   if (sysmp(MP_SAGET, MPSA_RMINFO, &realmem, sizeof(realmem)) == -1) {
-    perror("sysmp(MP_SAGET,MPSA_RMINFO, ...)");
-    return;
+    return 0;
   }
 
   pagesize = sysconf(_SC_PAGESIZE);
@@ -77,8 +84,7 @@ uint64_t uv_get_total_memory(void) {
   long pagesize;
     
   if (sysmp(MP_SAGET, MPSA_RMINFO, &realmem, sizeof(realmem)) == -1) {
-    perror("sysmp(MP_SAGET,MPSA_RMINFO, ...)");
-    return;
+    return 0;
   }
 
   pagesize = sysconf(_SC_PAGESIZE);
