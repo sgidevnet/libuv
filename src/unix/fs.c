@@ -604,7 +604,7 @@ static ssize_t uv__fs_realpath(uv_fs_t* req) {
 #else
   ssize_t len;
 
-  /* On IRIX realpath() seems to cause a SEGV unless MAX_PATH bytes 
+  /* On IRIX realpath() seems to cause a SEGV unless PATH_MAX bytes 
    * have been allocated. */
 #ifdef __sgi
   buf = uv__malloc(PATH_MAX + 1);
