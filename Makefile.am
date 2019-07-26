@@ -324,6 +324,13 @@ test_run_tests_CFLAGS += -D_ALL_SOURCE \
                          -D_LINUX_SOURCE_COMPAT
 endif
 
+if IRIX
+test_run_tests_CFLAGS += -D_SGI_SOURCE \
+                         -D_XOPEN_SOURCE=500 \
+                         -D_REENTRANT_FUNCTIONS
+endif
+
+
 if HAIKU
 test_run_tests_CFLAGS += -D_BSD_SOURCE
 endif
@@ -362,6 +369,13 @@ libuv_la_CFLAGS += -D_ALL_SOURCE \
                    -DHAVE_SYS_AHAFS_EVPRODS_H
 uvinclude_HEADERS += include/uv/aix.h
 libuv_la_SOURCES += src/unix/aix.c src/unix/aix-common.c
+endif
+
+if IRIX
+libuv_la_CFLAGS += -D_SGI_SOURCE \
+                   -D_XOPEN_SOURCE=500 \
+                   -D_REENTRANT_FUNCTIONS
+libuv_la_SOURCES += src/unix/irix.c
 endif
 
 if ANDROID
