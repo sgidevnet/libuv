@@ -40,6 +40,25 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+#ifdef __sgi
+int
+setenv(const char *name, const char *value, int o)
+{
+    size_t len = strlen(name) + strlen(value) + 1;
+    char *s = malloc(len+1);
+    int ret;
+
+    snprintf(s, len, "%s=%s", name, value);
+    ret = putenv(s);
+    free(s);
+    return ret;
+}
+
+#define unsetenv(x) setenv(x, "", 1)
+
+
+#endif
+
 extern char** environ;
 
 static void closefd(int fd) {
