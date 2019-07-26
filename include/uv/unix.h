@@ -27,9 +27,14 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-#include <sys/socket.h>
+#if defined(__sgi)
+#include <sys/bsd_types.h>
+#include <sys/filio.h>
+#endif
+
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>  /* MAXHOSTNAMELEN on Solaris */
 
@@ -55,6 +60,8 @@
 # include "uv/sunos.h"
 #elif defined(__APPLE__)
 # include "uv/darwin.h"
+#elif defined(__sgi)
+# include "uv/irix.h"
 #elif defined(__DragonFly__)       || \
       defined(__FreeBSD__)         || \
       defined(__FreeBSD_kernel__)  || \
