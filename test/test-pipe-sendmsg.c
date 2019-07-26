@@ -126,8 +126,10 @@ TEST_IMPL(pipe_sendmsg) {
   memset(&msg, 0, sizeof(msg));
   msg.msg_iov = (struct iovec*) &buf;
   msg.msg_iovlen = 1;
+#if !defined(__sgi)
   msg.msg_flags = 0;
-
+#endif
+  
   msg.msg_control = (void*) scratch;
   msg.msg_controllen = CMSG_LEN(sizeof(send_fds));
   ASSERT(sizeof(scratch) >= msg.msg_controllen);
