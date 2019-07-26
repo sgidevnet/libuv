@@ -159,9 +159,49 @@ void uv_free_cpu_info(uv_cpu_info_t* cpu_infos, int count) {
   uv__free(cpu_infos);
 }
 
-/* Stolen from AIX.
+void uv_uptime(double* uptime) {
+  *uptime = 12345;
+}
+
+int uv_resident_set_memory(size_t* rss) {
+  *rss = 1024*1024;
+  return 0;
+}
+
+/* Stolen verbatim from AIX.
  */
-/*
+int uv_set_process_title(const char* title) {
+  char* new_title;
+
+  /* We cannot free this pointer when libuv shuts down,
+   * the process may still be using it.
+   */
+  new_title = uv__strdup(title);
+  if (new_title == NULL)
+    return UV_ENOMEM;
+
+  uv_once(&process_title_mutex_once, init_process_title_mutex_once);
+  uv_mutex_lock(&process_title_mutex);
+
+  /* If this is the first time this is set,
+   * don't free and set argv[1] to NULL.
+   */
+  if (process_title_ptr != NULL)
+    uv__free(process_title_ptr);
+
+  process_title_ptr = new_title;
+
+  process_argv[0] = process_title_ptr;
+  if (process_argc > 1)
+     process_argv[1] = NULL;
+
+  uv_mutex_unlock(&process_title_mutex);
+
+  return 0;
+}
+
+/* Stolen from AIX, slightly modified.
+ *
  * We could use a static buffer for the path manipulations that we need outside
  * of the function, but this function could be called by multiple consumers and
  * we don't want to potentially create a race condition in the use of snprintf.
