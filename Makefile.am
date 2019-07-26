@@ -326,7 +326,6 @@ endif
 
 if IRIX
 test_run_tests_CFLAGS += -D_SGI_SOURCE \
-                         -D_XOPEN_SOURCE=500 \
                          -D_REENTRANT_FUNCTIONS
 endif
 
@@ -373,8 +372,8 @@ endif
 
 if IRIX
 libuv_la_CFLAGS += -D_SGI_SOURCE \
-                   -D_XOPEN_SOURCE=500 \
                    -D_REENTRANT_FUNCTIONS
+uvinclude_HEADERS += include/uv/irix.h
 libuv_la_SOURCES += src/unix/irix.c
 endif
 
