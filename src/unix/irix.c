@@ -22,12 +22,17 @@
 #include "uv.h"
 #include "internal.h"
 
+#include <fcntl.h>
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/soioctl.h>
+#include <procfs/procfs.h>
 #include <stdio.h>
+#include <string.h>
 #include <stropts.h>
 #include <sys/ioctl.h>
+#include <sys/param.h>
+#include <sys/procfs.h>
 #include <sys/stat.h>
 #include <sys/sysget.h>
 #include <sys/sysinfo.h>
@@ -173,6 +178,48 @@ int uv_resident_set_memory(size_t* rss) {
   return 0;
 }
 
+int uv_exepath(char* buffer, size_t* size) {
+  char filename[50];
+  char abspath[PATH_MAX];
+  char firstarg[PATH_MAX];
+  size_t abspath_size;
+  int fd;
+
+  if (buffer == NULL || size == NULL || *size == 0)
+    return UV_EINVAL;
+
+  sprintf (filename, "/proc/pinfo/%d", (int) getpid ());
+  fd = open (filename, O_RDONLY);
+  if (0 <= fd) {
+    prpsinfo_t buf;
+    int ioctl_ok = 0 <= ioctl (fd, PIOCPSINFO, &buf);
+    close (fd);
+    if (ioctl_ok)
+      {
+	int offset = strchr(buf.pr_psargs, ' ') - buf.pr_psargs;
+	memcpy(firstarg, buf.pr_psargs, offset);
+	firstarg[offset] = '\0';
+
+	printf("%s\n", firstarg);
+	
+	if(!realpath(firstarg, abspath))
+	  return UV__ERR(errno);
+
+	abspath_size = strlen(abspath);
+
+	*size -= 1;
+	if (*size > abspath_size)
+	  *size = abspath_size;
+
+	memcpy(buffer, abspath, *size);
+	buffer[*size] = '\0';
+
+	return 0;
+      }
+  }
+  return UV__EINVAL;
+}
+
 /* Stuff below stolen from AIX.
  */
 static void init_process_title_mutex_once(void) {
@@ -274,87 +321,6 @@ int uv_get_process_title(char* buffer, size_t size) {
 }
 
 
-/* Stolen from AIX, slightly modified.
- *
- * We could use a static buffer for the path manipulations that we need outside
- * of the function, but this function could be called by multiple consumers and
- * we don't want to potentially create a race condition in the use of snprintf.
- * There is no direct way of getting the exe path in AIX - either through /procfs
- * or through some libc APIs. The below approach is to parse the argv[0]'s pattern
- * and use it in conjunction with PATH environment variable to craft one.
- */
-int uv_exepath(char* buffer, size_t* size) {
-  char args[PATH_MAX];
-  char abspath[PATH_MAX];
-  size_t abspath_size;
-
-  if (buffer == NULL || size == NULL || *size == 0)
-    return UV_EINVAL;
-
-  /*
-   * Possibilities for args:
-   * i) an absolute path such as: /home/user/myprojects/nodejs/node
-   * ii) a relative path such as: ./node or ../myprojects/nodejs/node
-   * iii) a bare filename such as "node", after exporting PATH variable
-   *     to its location.
-   */
-
-  /* Case i) and ii) absolute or relative paths */
-  if (strchr(args, '/') != NULL) {
-    if (realpath(args, abspath) != abspath)
-      return UV__ERR(errno);
-
-    abspath_size = strlen(abspath);
-
-    *size -= 1;
-    if (*size > abspath_size)
-      *size = abspath_size;
-
-    memcpy(buffer, abspath, *size);
-    buffer[*size] = '\0';
-
-    return 0;
-  } else {
-    /* Case iii). Search PATH environment variable */
-    char trypath[PATH_MAX];
-    char *clonedpath = NULL;
-    char *token = NULL;
-    char *path = getenv("PATH");
-
-    if (path == NULL)
-      return UV_EINVAL;
-
-    clonedpath = uv__strdup(path);
-    if (clonedpath == NULL)
-      return UV_ENOMEM;
-
-    token = strtok(clonedpath, ":");
-    while (token != NULL) {
-      snprintf(trypath, sizeof(trypath) - 1, "%s/%s", token, args);
-      if (realpath(trypath, abspath) == abspath) {
-        /* Check the match is executable */
-        if (access(abspath, X_OK) == 0) {
-          abspath_size = strlen(abspath);
-
-          *size -= 1;
-          if (*size > abspath_size)
-            *size = abspath_size;
-
-          memcpy(buffer, abspath, *size);
-          buffer[*size] = '\0';
-
-          uv__free(clonedpath);
-          return 0;
-        }
-      }
-      token = strtok(NULL, ":");
-    }
-    uv__free(clonedpath);
-
-    /* Out of tokens (path entries), and no match found */
-    return UV_EINVAL;
-  }
-}
 
 /* This may work.
  */
